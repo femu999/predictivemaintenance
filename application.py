@@ -71,17 +71,20 @@ line_colors = {
 # Create a Streamlit app
 st.title("Visualisierung des Stromnetzes in Essen")
 
-st.header("Zustandprognose der Betriebsmittel")
+st.header("Zustandprognose der Betriebsmittel - was möchtest du wissen?")
+worst_equipments = st.button("Zeige kritische Betriebsmittelzustände")
+map_equipments = st.button("Zeige Geografische Betriebsmittelübersicht")
 
 # Sidebar für Benutzereingaben
 st.sidebar.header('Benutzereingaben')
 
 def user_input_features():
-    equipment_id = st.sidebar.selectbox('Geräte-ID', asset_list)
-    temperature = st.sidebar.slider('Temperatur (°C)', -20, 100, 25)
-    humidity = st.sidebar.slider('Luftfeuchtigkeit (%)', 0, 100, 50)
-    vibration = st.sidebar.slider('Vibration (mm/s)', 0.0, 10.0, 1.0)
-    load = st.sidebar.slider('Last (%)', 0, 100, 75)
+    st.header("Kritische Auslastung > 95%")
+    equipment_id = st.selectbox('Geräte-ID', asset_list)
+    temperature = st.slider('Temperatur (°C)', -20, 100, 25)
+    humidity = st.slider('Luftfeuchtigkeit (%)', 0, 100, 50)
+    vibration = st.slider('Vibration (mm/s)', 0.0, 10.0, 1.0)
+    load = st.slider('Last (%)', 0, 100, 98)
     data = {'equipment_id': equipment_id,
             'temperature': temperature,
             'humidity': humidity,
@@ -118,6 +121,20 @@ def user_input_simulation():
 
 year = user_input_simulation()
 
+# Check if the variable is already in session_state
+if 'show_map' not in st.session_state:
+    st.session_state.show_map = False  # Set the initial value
+
+if 'show_crit' not in st.session_state:
+    st.session_state.show_crit = False  # Set the initial value
+
+if worst_equipments:
+    st.session_state.show_map = False
+    st.session_state.show_crit = True
+
+if map_equipments:
+    st.session_state.show_map = True
+    st.session_state.show_crit = False
 
 # Create a map centered around Essen
 map_center = [51.4556, 7.0116]
@@ -185,9 +202,16 @@ for name, coords in lines.items():
     popup = folium.Popup(iframe, max_width=2650)
     folium.PolyLine(locations=coords, popup=popup, tooltip=name, color=line_colors[name], weight=5, opacity=1).add_to(m)
 
-# Display the map in Streamlit
-st_folium(m)
+if st.session_state.show_crit:
+    df = user_input_features()
 
-st.text("rot - älter 35 Jahre")
-st.text("gelb - älter 25 Jahre")
-st.text("grün - jünger 25 Jahre")
+if st.session_state.show_map:
+    st_folium(m)
+
+
+    # Display the map in Streamlit
+
+
+    st.text("rot - älter 35 Jahre")
+    st.text("gelb - älter 25 Jahre")
+    st.text("grün - jünger 25 Jahre")
