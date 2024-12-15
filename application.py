@@ -200,7 +200,7 @@ for name, coords in lines.items():
             """
     iframe = folium.IFrame(html, width=300, height=200)
     popup = folium.Popup(iframe, max_width=2650)
-    folium.PolyLine(locations=coords, popup=popup, tooltip=name, color=line_colors[name], weight=5, opacity=1).add_to(m)
+    folium.PolyLine(locations=coords, popup=popup, tooltip=name, color=get_color_by_construction_year(construction_years[name] - (year - 2024)), weight=5, opacity=1).add_to(m)
 
 if st.session_state.show_crit:
     df = user_input_features()
